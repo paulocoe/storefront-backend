@@ -5,12 +5,13 @@
       },
     "pg": {
         "driver": "pg",
-        "user": "test",
-        "password": "test",
-        "host": "localhost",
-        "database": "mydb",
-        "port": "20144",
+        "user": {"ENV": "DB_USER"},
+        "password": {"ENV": "DB_PASSWORD"},
+        "host": {"ENV": "DB_HOST"},
+        "database": {"ENV": "DB_NAME"},
+        "port": {"ENV": "DB_PORT"},
         "ssl": "true",
-        "schema": "my_schema"
-    }
+        "schema": {"ENV": "DB_SCHEMA"}
+    },
+    "sql-file" : true
 }
