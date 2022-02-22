@@ -9,29 +9,49 @@ export type Product = {
 
 export class ProductStore {
   async index(): Promise<Product[]> {
-    try {
-      const conn = await Client.connect();
-      const sql = "SELECT * FROM products";
-      const result = await conn.query(sql);
-      conn.release();
-      return result.rows;
-    } catch (error) {
-      console.error(error);
-      throw error;
-    }
+    const sql = "SELECT * FROM products";
+    const products = await this.executeQuery(sql);
+    return products;
   }
 
   async create(product: Product): Promise<number> {
-    try {
-      const conn = await Client.connect();
-      const sql = `INSERT INTO products (name, price, category_id) 
+    const sql = `INSERT INTO products (name, price, category_id) 
        VALUES (${product.name}, ${product.price}, ${product.categoryId})
        RETURNING id`;
-      const result = await conn.query(sql);
+    const products = await this.executeQuery(sql);
+    return products[0].id;
+  }
+
+  async show(productId: number): Promise<Product> {
+    const sql = `SELECT * FROM products WHERE id = '${productId}'`;
+    const products = await this.executeQuery(sql);
+    return products[0];
+  }
+
+  async mostPopular(): Promise<Product[]> {
+    const sql = `SELECT  * 
+     FROM 	products
+     WHERE	id in (
+            SELECT 	op.product_id
+            FROM 	  order_products op,
+                    orders o,
+                    products p
+            WHERE 	o.id = op.order_id
+            AND 	  o.status_id = 2
+            order by sum(op.quantity) desc
+            limit 5);`;
+    const products = await this.executeQuery(sql);
+    return products;
+  }
+
+  private async executeQuery(sql: string): Promise<Product[]> {
+    try {
+      const conn = await Client.connect();
+      const result = await conn.query<Product>(sql);
       conn.release();
-      return result.rows[0].id as number;
+      return result.rows;
     } catch (error) {
-      console.error(error);
+      console.error(`Error when querying the database - ${error}`);
       throw error;
     }
   }
