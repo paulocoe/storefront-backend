@@ -1,4 +1,1 @@
-INSERT INTO order_status
-VALUES
-    ('Active'),
-    ('Complete');
+DELETE FROM order_status;
