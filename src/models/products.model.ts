@@ -16,8 +16,9 @@ export class ProductStore {
 
   async create(product: Product): Promise<number> {
     const sql = `INSERT INTO products (name, price, category_id) 
-       VALUES (${product.name}, ${product.price}, ${product.categoryId})
+       VALUES ('${product.name}', ${product.price}, ${product.categoryId})
        RETURNING id`;
+    console.log(sql);
     const products = await this.executeQuery(sql);
     return products[0].id;
   }
@@ -44,6 +45,12 @@ export class ProductStore {
     return products;
   }
 
+  async byCategory(categoryId: number): Promise<Product[]> {
+    const sql = `SELECT * FROM products WHERE category_id = ${categoryId}`;
+    const products = await this.executeQuery(sql);
+    return products;
+  }
+
   private async executeQuery(sql: string): Promise<Product[]> {
     try {
       const conn = await Client.connect();
@@ -51,7 +58,7 @@ export class ProductStore {
       conn.release();
       return result.rows;
     } catch (error) {
-      console.error(`Error when querying the database - ${error}`);
+      console.error(`Error when querying/persisting the database - ${error}`);
       throw error;
     }
   }
